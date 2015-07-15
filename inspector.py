@@ -67,7 +67,7 @@ class Inspector:
     def inspect_function(self, fn_str):
         print(fn_str)
         function_name = eval(fn_str + '.__name__')
-        docs = {function_name: {'docstring': eval('inspect.getdoc(' + fn_str + ')')
+        docs = {function_name: {'docstring': eval('inspect.getdoc(' + fn_str + ')'),
                                 'parameters': {}
                                 }
                 }
