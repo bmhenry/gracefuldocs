@@ -3,4 +3,5 @@
 A graceful documentation generator for Python, built in Python.
 
 
-Copyright (c) Brandon Henry 2015
+Copyright (c) 2015 Brandon Henry
+Available under the MIT License

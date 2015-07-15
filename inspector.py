@@ -1,4 +1,4 @@
-import inspect, importlib
+import inspect, importlib, re
 
 __doc__ = """Inspects a module and prints the docs for the module and its members"""
 
@@ -24,8 +24,10 @@ class Inspector:
 
         members = eval('dir(' + moduleName + ')')
 
+        regex = re.compile('__(\S+)__')
         for m in members:
-            if m == '__abstractmethods__':
+            print(m)
+            if regex.match(m):
                 continue
             item = moduleName + '.' + m
             if eval('inspect.isclass(' + item + ')'):
@@ -33,11 +35,6 @@ class Inspector:
             elif eval('inspect.isfunction(' + item + ')'):
                 self.docs[moduleName]['functions'].update(self.inspect_function(item))
             
-        pass
-
-    def inspect_bit(self, string):
-        if eval('inspect.isclass(' + string + ')'):
-            pass
         pass
 
 
@@ -51,8 +48,9 @@ class Inspector:
                                               }
                 }
 
+        regex = re.compile('__(\S+)__')
         for m in members:
-            if '__' in m:
+            if regex.match(m):
                 continue
             new_item = class_str + '.' + m
             if eval('inspect.isclass(' + new_item + ')'):
@@ -67,7 +65,7 @@ class Inspector:
     def inspect_function(self, fn_str):
         print(fn_str)
         function_name = eval(fn_str + '.__name__')
-        docs = {function_name: {'docstring': eval('inspect.getdoc(' + fn_str + ')')
+        docs = {function_name: {'docstring': eval('inspect.getdoc(' + fn_str + ')'),
                                 'parameters': {}
                                 }
                 }
@@ -80,6 +78,7 @@ class Inspector:
         print(self.docs[self.moduleName]['functions'])
 
         pass
+        
 
 if __name__ == '__main__':
     x = inspector(input('Module to inspect: '))
