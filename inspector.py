@@ -69,6 +69,7 @@ class Inspector:
                                 'parameters': {}
                                 }
                 }
+                
         return docs
 
 
@@ -78,8 +79,12 @@ class Inspector:
         print(self.docs[self.moduleName]['functions'])
 
         pass
-        
 
-if __name__ == '__main__':
+
+def main():
     x = inspector(input('Module to inspect: '))
     x.print_docs()
+
+
+if __name__ == '__main__':
+    main()
