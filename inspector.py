@@ -1,4 +1,4 @@
-import inspect, importlib, re
+import inspect, importlib, re, sys, os
 
 __doc__ = """Inspects a module and prints the docs for the module and its members"""
 
@@ -8,18 +8,29 @@ class Inspector:
                          dict{classes: { class name : {docstring, subclass dict, method dict}},
                          dict{functions: { function name : {docstring, parameters w/ defaults}} }
     """
-    def __init__(self, moduleName):
+    def __init__(self, module):
+        # fix import path to use working directory not gracefuldocs folder
+        store_path = sys.path[0]
+        sys.path[0] = os.getcwd()
+
+        # attempt to import module
         try:
-            globals()[moduleName] = importlib.import_module(moduleName)
+            temp = importlib.import_module(module)
+            moduleName = temp.__name__
+            globals()[moduleName] = temp
         except Exception as e:
             print("Couldn't import module. Is it in your current directory or Python path?")
             return None
+
+        # return system path to where it was
+        sys.path[0] = store_path
 
         self.docs = { moduleName: {'docstring': eval('inspect.getdoc(' + moduleName + ')'),
                                    'classes': {}, 
                                    'functions': {}
                                   }
                     }
+                    
         self.moduleName = moduleName
 
         members = eval('dir(' + moduleName + ')')
