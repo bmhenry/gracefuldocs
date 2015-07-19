@@ -17,22 +17,22 @@ def forcedir(dir_path):
     pass
 
 
-def doc_class(self, classdict):
+def doc_class(classdict):
     """Documents a class recursively, calling itself if necessary"""
     
     sidebar = ""
     html = {}
 
-    return dict
+    return (html, )
 
 
-def documentor(self, module):
+def documentor(module):
     """Obtains documentation for the module given"""
 
     sidebar = ""
 
     fulldata = Inspector(module).docs
-    modulename = fulldata.keys()[0]
+    modulename = [name for name in fulldata][0]
     moduledata = fulldata[modulename]
 
     html = {"index.html": ghtml.generate_index(modulename, moduledata['docstring']),
@@ -42,9 +42,12 @@ def documentor(self, module):
 
     footer = ghtml.generate_footer(modulename)
 
-    base = ghtml.fill_base(title = self.title, sidebar = sidebar, footer = footer)
+    if sidebar:
+        sidebar += '\n<div style="height: 5vh"></div>'
 
-    for key in self.html:
+    base = ghtml.fill_base(title = modulename, sidebar = sidebar, footer = footer)
+
+    for key in html:
         if key == 'style.css':
             continue
         html[key] = base.format(body = html[key])
