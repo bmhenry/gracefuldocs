@@ -2,7 +2,7 @@ import os, sys, time
 
 
 def html_dir():
-    return os.path.abspath(sys.path[0]) + '\\web_base\\'
+  return os.path.abspath(sys.path[0]) + '/web_base/'
 
 
 def get_base(): 

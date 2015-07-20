@@ -6,9 +6,7 @@ import web_base.html as ghtml
 
 def forcedir(dir_path):
     """Makes sure that a directory exists"""
-    print(dir_path)
     subdirs = dir_path.strip().split('\\')
-    print(subdirs)
     for path in range(len(subdirs)):
         new_path = '\\'.join(subdirs)
         print("%" + new_path + "%")
@@ -17,37 +15,79 @@ def forcedir(dir_path):
     pass
 
 
-def doc_class(classdict):
+def doc_element(name_, dict_, *, gen_sidebar = False):
     """Documents a class recursively, calling itself if necessary"""
-    
-    sidebar = ""
-    html = {}
 
-    return (html, )
+    html = ""
+    htmldict = {name_ + '.html': ''}
+    sidebar = ''
+
+    docstring = dict_['docstring']
+    subclasses = dict_['classes']
+    subfunctions = dict_['functions']
+
+    html += ghtml.generate_index(name_, docstring)
+
+    if gen_sidebar:
+        sidebar = '<li><a href="{name}.html">{name}</a></li>'
+
+    if subclasses:
+        html += '<br/><br/><h4>Subclasses:</h4>\n'
+        html += '<ul>\n'
+        for class_ in subclasses:
+            html += '<li><a href="{cname}.html">{cname}</a></li>'.format(cname = class_)
+            htmldict.update(doc_element(class_, subclasses[class_])[0])
+        html += '</ul>\n'
+    if subfunctions:
+        html += '<br/><br/><h4>Subfunctions:</h4>\n'
+        for fn_ in subfunctions:
+            html += '<li><a href="{fn}.html">{fn}</a></li>'.format(fn = fn_)
+            htmldict.update(doc_element(fn_, subfunctions[fn_])[0])
+        html += '</ul>\n'
+
+    htmldict[name_ + '.html'] = html
+
+    return (htmldict, sidebar)
 
 
 def documentor(module):
     """Obtains documentation for the module given"""
 
-    sidebar = ""
-
     fulldata = Inspector(module).docs
     modulename = [name for name in fulldata][0]
     moduledata = fulldata[modulename]
+
+    sidebar = "<p><b>{title}</b></p>\n"
+    sidebar += "<i>Classes:</i><ul>{classes}</ul>"
+    sidebar += "<i>Functions:</i><ul>{fns}</ul>"
+
+    s_classes = ''
+    s_fns = ''
 
     html = {"index.html": ghtml.generate_index(modulename, moduledata['docstring']),
             "style.css" : ghtml.get_css(),
             "gracefuldocs.html" : ghtml.get_gd()}
 
+    for class_ in moduledata['classes']:
+        new = doc_element(class_, moduledata['classes'][class_], gen_sidebar = True)
+        html.update(new[0])
+        s_classes += new[1]
+    for fn_ in moduledata['functions']:
+        new = doc_element(fn_, moduledata['functions'][fn_], gen_sidebar = True)
+        html.update(new[0])
+        s_fns += new[1]
+
 
     footer = ghtml.generate_footer(modulename)
 
+    sidebar.format(title = '{title}', classes = s_classes, fns = s_fns)
     if sidebar:
         sidebar += '\n<div style="height: 5vh"></div>'
 
     base = ghtml.fill_base(title = modulename, sidebar = sidebar, footer = footer)
 
     for key in html:
+        print(key)
         if key == 'style.css':
             continue
         html[key] = base.format(body = html[key])

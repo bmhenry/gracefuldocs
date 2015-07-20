@@ -37,7 +37,6 @@ class Inspector:
 
         regex = re.compile('__(\S+)__')
         for m in members:
-            print(m)
             if regex.match(m):
                 continue
             item = moduleName + '.' + m
@@ -50,7 +49,6 @@ class Inspector:
 
 
     def inspect_class(self, class_str):
-        print(class_str)
         members = eval('dir(' + class_str + ')')
         class_name = eval(class_str + '.__name__')
         docs = {class_name: {'docstring': eval('inspect.getdoc(' + class_str + ')'),
@@ -74,10 +72,11 @@ class Inspector:
 
 
     def inspect_function(self, fn_str):
-        print(fn_str)
         function_name = eval(fn_str + '.__name__')
         docs = {function_name: {'docstring': eval('inspect.getdoc(' + fn_str + ')'),
-                                'parameters': {}
+                                'parameters': {},
+                                'classes': {},
+                                'functions': {}
                                 }
                 }
                 
