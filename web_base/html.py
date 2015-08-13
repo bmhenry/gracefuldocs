@@ -26,13 +26,13 @@ def get_css():
 
 
 def get_gd():
-    with open(html_dir() + 'gracefuldocs.html') as g:
+    with open(html_dir() + 'gracefuldocs_about.html') as g:
         filler = g.read()
 
     return filler
 
 def generate_index(modulename, docstring):
-    html = '<h3><i>{title}:</i></h3>\n<p class="bodytext">{doc}</p>'
+    html = '<h3><i>{title}:</i></h3><hr/>\n<p class="bodytext">{doc}</p>'
     return html.format(title = modulename, doc = docstring)
 
 

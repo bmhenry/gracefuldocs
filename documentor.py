@@ -1,25 +1,38 @@
+"""
+Documents a module given the module name as an input.
+Utilizes the Inspector function to get the documentation for the module,
+then produces a static HTML site.
+"""
+
 import os, re, sys, webbrowser
 from inspector import Inspector
 import web_base.html as ghtml
 
+import code
 
+"""
+TODO:
+
+- create the classes.html page and functions.html page
+
+"""
 
 def forcedir(dir_path):
     """Makes sure that a directory exists"""
+
     subdirs = dir_path.strip().split('\\')
     for path in range(len(subdirs)):
         new_path = '\\'.join(subdirs)
-        print("%" + new_path + "%")
         if not os.path.isdir(new_path):
             os.mkdir(new_path)
     pass
 
 
-def doc_element(name_, dict_, *, gen_sidebar = False):
-    """Documents a class recursively, calling itself if necessary"""
+def doc_element(name_, dict_, *, subdir = "", gen_sidebar = False):
+    """Documents an element recursively, calling itself if necessary"""
 
     html = ""
-    htmldict = {name_ + '.html': ''}
+    htmldict = {subdir + "/" + name_ + '.html': ''}
     sidebar = ''
 
     docstring = dict_['docstring']
@@ -29,7 +42,7 @@ def doc_element(name_, dict_, *, gen_sidebar = False):
     html += ghtml.generate_index(name_, docstring)
 
     if gen_sidebar:
-        sidebar = '<li><a href="{name}.html">{name}</a></li>'
+        sidebar = '<li><a href="{name}.html">{name}</a></li>'.format(name = name_)
 
     if subclasses:
         html += '<br/><br/><h4>Subclasses:</h4>\n'
@@ -53,11 +66,14 @@ def doc_element(name_, dict_, *, gen_sidebar = False):
 def documentor(module):
     """Obtains documentation for the module given"""
 
-    fulldata = Inspector(module).docs
+    fulldata = Inspector(module)
+    print(fulldata)
+    pass
+    
     modulename = [name for name in fulldata][0]
     moduledata = fulldata[modulename]
 
-    sidebar = "<p><b>{title}</b></p>\n"
+    sidebar = "<p><a href='index.html'><b>{title}</b></a></p>\n"
     sidebar += "<i>Classes:</i><ul>{classes}</ul>"
     sidebar += "<i>Functions:</i><ul>{fns}</ul>"
 
@@ -66,7 +82,9 @@ def documentor(module):
 
     html = {"index.html": ghtml.generate_index(modulename, moduledata['docstring']),
             "style.css" : ghtml.get_css(),
-            "gracefuldocs.html" : ghtml.get_gd()}
+            "classes.html" : "",
+            "functions.html" : "",
+            "gracefuldocs_about.html" : ghtml.get_gd()}
 
     for class_ in moduledata['classes']:
         new = doc_element(class_, moduledata['classes'][class_], gen_sidebar = True)
@@ -80,16 +98,16 @@ def documentor(module):
 
     footer = ghtml.generate_footer(modulename)
 
-    sidebar.format(title = '{title}', classes = s_classes, fns = s_fns)
+    sidebar = sidebar.format(title = modulename, classes = s_classes, fns = s_fns)
     if sidebar:
         sidebar += '\n<div style="height: 5vh"></div>'
 
     base = ghtml.fill_base(title = modulename, sidebar = sidebar, footer = footer)
 
     for key in html:
-        print(key)
         if key == 'style.css':
             continue
+        #code.interact(local = locals())
         html[key] = base.format(body = html[key])
 
     return html
