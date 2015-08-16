@@ -21,9 +21,11 @@ body {
 
 #navbar {
     text-align: center;
-    border-color: black;
+    border-color: #9CB7B6;
     border-style: solid;
-    border-width: 1px 0;
+    border-width: 1px 0 0 0;
+    background-color: #AEC8C7;
+    box-shadow: 0px 6px 10px #888888;
 }
 
 #navbar a {
@@ -31,20 +33,27 @@ body {
     display: inline-block;
     color: #5a5a5a;
     text-decoration: none;
+    height: 25px;
     font-size: 1.2em;
 }
 
 #navbar a:hover {
-    background-color: #00aaaf;
+    background-color: #0095D5;
     color: white;
+    text-shadow: 5px 2px #0074A5;
+    margin-top: -3px;
 }
 
 #sidebar {
+    position: relative;
     border-width: 0 1px 0 0;
     border-style: solid;
-    border-color: black;
+    border-color: #A2C1C0;
     float: left;
     padding:20px;
+    color: #;
+    background-color: #E4E9E8;
+    z-index: -1;
 }
 
 #sidebar a {

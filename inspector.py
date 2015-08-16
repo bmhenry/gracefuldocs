@@ -3,6 +3,32 @@
 import inspect, importlib, re, sys, os
 
 
+"""
+TODO:
+
+check if the module is a directory
+ if so, search for .py files and directories inside
+ import each and inspect them
+"""
+
+def add_members(name, regex, docs):
+    # get members of module/submodule
+    members = eval('dir(' + name + ')')
+
+    # check each of the module's members and document if possible
+    for m in members:
+            # skip __init__, etc.
+            if regex.match(m):
+                continue
+
+            # document each member
+            item = name + '.' + m
+            if eval('inspect.isclass(' + item + ')'):
+                docs[1]['classes'].append(inspect_class(item, regex))
+            elif eval('inspect.isfunction(' + item + ')'):
+                docs[1]['functions'].append(inspect_function(item))
+
+
 
 def Inspector(module):
     """
@@ -36,24 +62,11 @@ def Inspector(module):
                     }
                 )
 
-    # get the members of the module
-    members = eval('dir(' + moduleName + ')')
-
     # this regex will find anything like '__init__' or '__repr__', etc.
     regex = re.compile('__(\S+)__')
 
     # check each of the module's members and document it if needed
-    for m in members:
-        # skip __init__, etc.
-        if regex.match(m):
-            continue
-
-        # document each member
-        item = moduleName + '.' + m
-        if eval('inspect.isclass(' + item + ')'):
-            docs[1]['classes'].append(inspect_class(item, regex))
-        elif eval('inspect.isfunction(' + item + ')'):
-            docs[1]['functions'].append(inspect_function(item))
+    add_members(moduleName, regex, docs)
         
     pass
 
@@ -61,7 +74,6 @@ def Inspector(module):
 def inspect_class(class_str, regex):
     """Inspects a class and returns a dict of info"""
 
-    members = eval('dir(' + class_str + ')')
     class_name = eval(class_str + '.__name__')
     docs = (class_name,
                 {
@@ -71,14 +83,7 @@ def inspect_class(class_str, regex):
                 }
             )
 
-    for m in members:
-        if regex.match(m):
-            continue
-        new_item = class_str + '.' + m
-        if eval('inspect.isclass(' + new_item + ')'):
-            docs[1]['classes'].append(inspect_class(new_item))
-        elif eval('inspect.isfunction(' + new_item + ')'):
-            docs[1]['functions'].append(inspect_function(new_item))
+    add_members(class_name, regex, docs)
 
 
     return docs
@@ -96,5 +101,7 @@ def inspect_function(fn_str):
                     'functions': {}
                 }
             )
+
+    add_members(class_name, regex, docs)
             
     return docs

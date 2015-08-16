@@ -5,8 +5,8 @@ then produces a static HTML site.
 """
 
 import os, re, sys, webbrowser
-from inspector import Inspector
-import web_base.html as ghtml
+from .inspector import Inspector
+import html as ghtml
 
 import code
 
@@ -67,6 +67,11 @@ def documentor(module):
     """Obtains documentation for the module given"""
 
     fulldata = Inspector(module)
+
+    if fulldata is None:
+        print("Cancelled documentation creation.")
+        exit()
+
     print(fulldata)
     pass
     
