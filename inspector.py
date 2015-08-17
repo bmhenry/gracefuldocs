@@ -11,26 +11,104 @@ check if the module is a directory
  import each and inspect them
 """
 
-def add_members(name, regex, docs):
-    # get members of module/submodule
-    members = eval('dir(' + name + ')')
 
-    # check each of the module's members and document if possible
-    for m in members:
-            # skip __init__, etc.
-            if regex.match(m):
-                continue
-
-            # document each member
-            item = name + '.' + m
-            if eval('inspect.isclass(' + item + ')'):
-                docs[1]['classes'].append(inspect_class(item, regex))
-            elif eval('inspect.isfunction(' + item + ')'):
-                docs[1]['functions'].append(inspect_function(item))
+class Inspector:
+    """
+    Inspects a mainpath file or directory and then returns a dictionary
+    containing the package or module's information.
+    """
 
 
+    def __init__(mainpath):
 
-def Inspector(module):
+        self.mainpath = mainpath
+        self.module_info = []
+        
+        # make sure the file/folder exists
+        if not os.path.exists(mainpath):
+            print("Couldn't find the specified path.")
+            return
+
+        # this regex will find anything like '__init__' or '__repr__', etc.
+        self.regex = re.compile('__(\S+)__')
+
+        if os.path.isdir(mainpath):
+            # a directory was given.
+            self.titlename =  os.path.split(mainpath)[1]
+
+            module_paths = []
+            for root, dirs, files in os.walk(mainpath):
+                for file in files:
+                    fname, fext = os.path.splitext(file)
+                    if fext == '.py' and not regex.match(fname):
+                        modules.append(os.path.join(root, file))
+
+            for module in module_paths:
+                mod_dict = inspect_module(module)
+                if mod_dict is not None:
+                    self.module_info.append(mod_dict)
+
+        elif os.path.isfile(mainpath):
+            self.module_info.append(inspect_module(mainpath))
+            self.titlename = self.module_info[0]["name"]
+
+        else:
+            print("Couldn't find a Python module at the given path.")
+            return
+
+
+    def inspect_module(modulepath):
+        """
+        Inspects a single module, getting information on classes, functions,
+        and the module itself.
+        """
+
+        # fix import path to use working directory instead of gracefuldocs folder
+        store_path = sys.path[0]
+        sys.path[0] = os.getcwd()
+
+        try:
+            cur_module = importlib.import_module(modulepath)
+            module_name = cur_module.__name__
+        except Exception as e:
+            print("Couldn't import module " + module_name + ". Is it in your current directory or Python path?")
+            return None
+
+        # return import path to what it was before
+        sys.path[0] = store_path
+
+        # the format for documenting a module
+        docs = { "name" : "" , "docstring" : "", "classes": [], "functions" : [] }
+
+        # get the docstring for the module
+        docs["docstring"] = eval("inspect.getdoc(" + module_name + ")")
+
+        # get the members of the module, getting the docs for each
+        
+
+        pass
+
+
+    def add_members(name, regex, docs):
+        # get members of module/submodule
+        members = eval('dir(' + name + ')')
+
+        # check each of the module's members and document if possible
+        for m in members:
+                # skip __init__, etc.
+                if regex.match(m):
+                    continue
+
+                # document each member
+                item = name + '.' + m
+                if eval('inspect.isclass(' + item + ')'):
+                    docs[1]['classes'].append(inspect_class(item, regex))
+                elif eval('inspect.isfunction(' + item + ')'):
+                    docs[1]['functions'].append(inspect_function(item))
+
+
+
+def inspect(module):
     """
     Inspects a module and returns a dictionary containing the module's 
     information.
