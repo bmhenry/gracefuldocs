@@ -44,12 +44,12 @@ class Inspector:
                         modules.append(os.path.join(root, file))
 
             for module in module_paths:
-                mod_dict = inspect_module(module)
+                mod_dict = self.inspect_module(module)
                 if mod_dict is not None:
                     self.module_info.append(mod_dict)
 
         elif os.path.isfile(mainpath):
-            self.module_info.append(inspect_module(mainpath))
+            self.module_info.append(self.inspect_module(mainpath))
             self.titlename = self.module_info[0]["name"]
 
         else:
@@ -57,7 +57,7 @@ class Inspector:
             return
 
 
-    def inspect_module(modulepath):
+    def inspect_module(module_path):
         """
         Inspects a single module, getting information on classes, functions,
         and the module itself.
@@ -68,7 +68,7 @@ class Inspector:
         sys.path[0] = os.getcwd()
 
         try:
-            cur_module = importlib.import_module(modulepath)
+            cur_module = importlib.import_module(module_path)
             module_name = cur_module.__name__
         except Exception as e:
             print("Couldn't import module " + module_name + ". Is it in your current directory or Python path?")
@@ -81,105 +81,55 @@ class Inspector:
         docs = { "name" : "" , "docstring" : "", "classes": [], "functions" : [] }
 
         # get the docstring for the module
-        docs["docstring"] = eval("inspect.getdoc(" + module_name + ")")
+        docs["docstring"] = cur_module.__doc__
 
-        # get the members of the module, getting the docs for each
-        
+        # inspect the members of the module
+        self.inspect_members(module_name, docs)
 
         pass
 
 
-    def add_members(name, regex, docs):
+    def inspect_members(parent_name, docs, *, c_or_f = False):
+        """Gets the members of a module/class/function and calls inspection on each"""
+
         # get members of module/submodule
-        members = eval('dir(' + name + ')')
+        members = eval('dir(' + parent_name + ')')
 
         # check each of the module's members and document if possible
-        for m in members:
+        for member in members:
                 # skip __init__, etc.
-                if regex.match(m):
+                if self.regex.match(member) and not (c_or_f and member == "__init__"):
                     continue
 
                 # document each member
-                item = name + '.' + m
-                if eval('inspect.isclass(' + item + ')'):
-                    docs[1]['classes'].append(inspect_class(item, regex))
-                elif eval('inspect.isfunction(' + item + ')'):
-                    docs[1]['functions'].append(inspect_function(item))
+                member_namepath = parent_name + '.' + member
+                if eval('inspect.isclass(' + member_namepath + ')'):
+                    docs['classes'].append(inspect_class(member_namepath))
+                elif eval('inspect.isfunction(' + member_namepath + ')'):
+                    docs['functions'].append(inspect_function(member_namepath))
+
+        pass
 
 
+    def inspect_class(class_name):
+        """Inspects a class for docs, subclasses, and subfunctions"""
 
-def inspect(module):
-    """
-    Inspects a module and returns a dictionary containing the module's 
-    information.
-    """
+        docs = { "name" : "" , "docstring" : "", "classes": [], "functions" : [] }
+        docs['name'] = eval(class_name + '.__name__')
+        docs['docstring'] = eval(class_name + '.__doc__')
 
-    # fix import path to use working directory not gracefuldocs folder
-    #  allows importing the module in question to be examined
-    store_path = sys.path[0]
-    sys.path[0] = os.getcwd()
+        self.inspect_members(class_name, docs)
 
-    # attempt to import module
-    try:
-        temp = importlib.import_module(module)
-        moduleName = temp.__name__
-        globals()[moduleName] = temp
-    except Exception as e:
-        print("Couldn't import module. Is it in your current directory or Python path?")
-        return None
-
-    # return system path to where it was
-    sys.path[0] = store_path
-
-    # the format for documenting the module
-    docs = ( moduleName, 
-                    {
-                        'docstring': eval('inspect.getdoc(' + moduleName + ')'),
-                        'classes': [], 
-                        'functions': []
-                    }
-                )
-
-    # this regex will find anything like '__init__' or '__repr__', etc.
-    regex = re.compile('__(\S+)__')
-
-    # check each of the module's members and document it if needed
-    add_members(moduleName, regex, docs)
-        
-    pass
+        pass
 
 
-def inspect_class(class_str, regex):
-    """Inspects a class and returns a dict of info"""
+    def inspect_function(fn_name):
+        """Inspects a function for docs, subclasses, and subfunctions"""
 
-    class_name = eval(class_str + '.__name__')
-    docs = (class_name,
-                {
-                    'docstring': eval('inspect.getdoc(' + class_str + ')'),
-                    'classes': [],
-                    'functions': []
-                }
-            )
+        docs = { "name" : "" , "docstring" : "", "classes": [], "functions" : [] }
+        docs['name'] = eval(fn_name + '.__name__')
+        docs['docstring'] = eval(fn_name + '.__doc__')
 
-    add_members(class_name, regex, docs)
+        self.inspect_members(fn_name, docs)
 
-
-    return docs
-
-
-def inspect_function(fn_str):
-    """Inspects a function and returns a dict of info"""
-
-    function_name = eval(fn_str + '.__name__')
-    docs = (function_name,
-                {
-                    'docstring': eval('inspect.getdoc(' + fn_str + ')'),
-                    'parameters': {},
-                    'classes': {},
-                    'functions': {}
-                }
-            )
-
-    add_members(class_name, regex, docs)
-            
-    return docs
+        pass
