@@ -4,9 +4,8 @@ Utilizes the Inspector function to get the documentation for the module,
 then produces a static HTML site.
 """
 
-import os, re, sys, webbrowser
-from .inspector import Inspector
-import html as ghtml
+import inspector
+import ghtml
 
 import code
 
@@ -63,42 +62,52 @@ def doc_element(name_, dict_, *, subdir = "", gen_sidebar = False):
     return (htmldict, sidebar)
 
 
-def documentor(module):
-    """Obtains documentation for the module given"""
+def documentor(mainpath):
+    """Obtains documentation for the package or module given"""
 
-    fulldata = Inspector(module)
+    mod_inspection = inspector.Inspector(mainpath)
+    fulldata = mod_inspection.module_info
 
     if fulldata is None:
         print("Cancelled documentation creation.")
         exit()
 
-    print(fulldata)
-    pass
-    
-    modulename = [name for name in fulldata][0]
-    moduledata = fulldata[modulename]
+    title = mod_inspection.titlename
+    maindocs = mod_inspection.package_docs
 
+    pages = {"index.html": ghtml.generate_index(titlename, fulldata),
+             "style.css" : ghtml.get_css(),
+             "classes.html" : "",
+             "functions.html" : "",
+             "gracefuldocs_about.html" : ghtml.gd()}
+    
     sidebar = "<p><a href='index.html'><b>{title}</b></a></p>\n"
-    sidebar += "<i>Classes:</i><ul>{classes}</ul>"
-    sidebar += "<i>Functions:</i><ul>{fns}</ul>"
+    sidebar += "<i>Modules:</i><ul>{modules}</ul>"
 
     s_classes = ''
     s_fns = ''
+    s_modules = ''
 
-    html = {"index.html": ghtml.generate_index(modulename, moduledata['docstring']),
-            "style.css" : ghtml.get_css(),
-            "classes.html" : "",
-            "functions.html" : "",
-            "gracefuldocs_about.html" : ghtml.get_gd()}
+    # get each module stored in the package data
+    for module in fulldata:
+        # generate a page name for the module
+        pagename = module["name"] + ".html"
 
-    for class_ in moduledata['classes']:
-        new = doc_element(class_, moduledata['classes'][class_], gen_sidebar = True)
-        html.update(new[0])
-        s_classes += new[1]
-    for fn_ in moduledata['functions']:
-        new = doc_element(fn_, moduledata['functions'][fn_], gen_sidebar = True)
-        html.update(new[0])
-        s_fns += new[1]
+        # generate a sidebar link for the module
+        s_modules += "<li>" + module['name'] + '</li>'
+
+        # get class info for the module
+        for mclass in module['classes']:
+            module_classes.append(mclass)
+            cdoc = doc_class(mclass)
+            """TODO starts around here"""
+        # get function info for the module
+        for mfunc in module['functions']:
+            module_functions.append(mfunc)
+
+        # generate the page for the module
+        pages[pagename] = ghtml.generate_modulepage(module["name"], module["docstring"], module_classes, module_functions)
+
 
 
     footer = ghtml.generate_footer(modulename)
@@ -109,11 +118,11 @@ def documentor(module):
 
     base = ghtml.fill_base(title = modulename, sidebar = sidebar, footer = footer)
 
-    for key in html:
-        if key == 'style.css':
+    for page in pages:
+        if page == 'style.css':
             continue
         #code.interact(local = locals())
-        html[key] = base.format(body = html[key])
+        html[page] = base.format(body = html[page])
 
     return html
 
@@ -146,9 +155,9 @@ def main():
             print("Cancelling doc creation...")
             exit()
 
-    for key in html:
-        with open(outdir + '/' + key, 'w') as doc:
-            doc.write(html[key])
+    for page in html:
+        with open(outdir + '/' + page, 'w') as doc:
+            doc.write(html[page])
 
     u_open = input("Documenation written. Open in browser now? (Y/N) ")
 
