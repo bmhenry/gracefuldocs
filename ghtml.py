@@ -25,11 +25,34 @@ def get_css():
         return css.read()
 
 
+def get_info():
+    with open(html_dir() + 'element_info.html') as info:
+        return info.read()
+
+
+def fill_info(*, name = "{name}", type = "{type}", args = "{args}", classes = "{classes}", functions = "{functions} "):
+    info = get_info()
+    info = info.format( name = name, 
+                        args = args, 
+                        classes = classes, 
+                        functions = functions )
+
+    return info
+
+
+def fill_sidebar(*, name = "{name}", module = "{module}"):
+    if name == module:
+        html = '<li><a class="sbmodule" href="{module}/{name}.html"</a>{name}</li>'
+    else:
+        html = '<li><a class="sbelement" href="{module}/{name}.html"</a>{name}</li>'
+
+    return html.format(name = name, module = module)
+
+
 def get_gd():
     with open(html_dir() + 'gracefuldocs_about.html') as g:
-        filler = g.read()
+        return g.read()
 
-    return filler
 
 def generate_index(modulename, docstring):
     html = '<h3><i>{title}:</i></h3><hr/>\n<p class="bodytext">{doc}</p>'

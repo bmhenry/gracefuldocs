@@ -27,104 +27,92 @@ def forcedir(dir_path):
     pass
 
 
-def doc_element(name_, dict_, *, subdir = "", gen_sidebar = False):
-    """Documents an element recursively, calling itself if necessary"""
-
-    html = ""
-    htmldict = {subdir + "/" + name_ + '.html': ''}
-    sidebar = ''
-
-    docstring = dict_['docstring']
-    subclasses = dict_['classes']
-    subfunctions = dict_['functions']
-
-    html += ghtml.generate_index(name_, docstring)
-
-    if gen_sidebar:
-        sidebar = '<li><a href="{name}.html">{name}</a></li>'.format(name = name_)
-
-    if subclasses:
-        html += '<br/><br/><h4>Subclasses:</h4>\n'
-        html += '<ul>\n'
-        for class_ in subclasses:
-            html += '<li><a href="{cname}.html">{cname}</a></li>'.format(cname = class_)
-            htmldict.update(doc_element(class_, subclasses[class_])[0])
-        html += '</ul>\n'
-    if subfunctions:
-        html += '<br/><br/><h4>Subfunctions:</h4>\n'
-        for fn_ in subfunctions:
-            html += '<li><a href="{fn}.html">{fn}</a></li>'.format(fn = fn_)
-            htmldict.update(doc_element(fn_, subfunctions[fn_])[0])
-        html += '</ul>\n'
-
-    htmldict[name_ + '.html'] = html
-
-    return (htmldict, sidebar)
+def parse_args(args, defaults = []):
+    """Takes the args and defaults dicts and puts them into a pretty string"""
+    pass
 
 
-def documentor(mainpath):
+
+
+class Documentor:
     """Obtains documentation for the package or module given"""
 
-    mod_inspection = inspector.Inspector(mainpath)
-    fulldata = mod_inspection.module_info
+    def __init__(self, mainpath):
+        mod_inspection = inspector.Inspector(mainpath)
+        fulldata = mod_inspection.module_info
 
-    if fulldata is None:
-        print("Cancelled documentation creation.")
-        exit()
+        if fulldata is None:
+            print("Cancelled documentation creation.")
+            exit()
 
-    title = mod_inspection.titlename
-    maindocs = mod_inspection.package_docs
+        title = mod_inspection.titlename
+        maindocs = mod_inspection.package_docs
 
-    pages = {"index.html": ghtml.generate_index(titlename, fulldata),
-             "style.css" : ghtml.get_css(),
-             "classes.html" : "",
-             "functions.html" : "",
-             "gracefuldocs_about.html" : ghtml.gd()}
-    
-    sidebar = "<p><a href='index.html'><b>{title}</b></a></p>\n"
-    sidebar += "<i>Modules:</i><ul>{modules}</ul>"
+        self._pages = { "index.html": ghtml.generate_index(titlename, fulldata),
+                        "style.css" : ghtml.get_css(),
+                        "classes.html" : "",
+                        "functions.html" : "",
+                        "gracefuldocs_about.html" : ghtml.gd() }
+        
+        self._sidebar = "<p><a href='index.html'><b>{title}</b></a></p>\n"
+        self._sidebar += "<i>Modules:</i><ul>"
 
-    s_classes = ''
-    s_fns = ''
-    s_modules = ''
+        # get each module stored in the package data
+        for module in fulldata:
+            # create a new folder for the module
+            forcedir(outputpath + "/" + module["name"])
 
-    # get each module stored in the package data
-    for module in fulldata:
-        # generate a page name for the module
-        pagename = module["name"] + ".html"
+            # generate a page name for the module
+            pagename = module["name"] + '/' + module['name'] + ".html"
 
-        # generate a sidebar link for the module
-        s_modules += "<li>" + module['name'] + '</li>'
+            # generate a sidebar link for the module
+            self._sidebar += ghtml.fill_sidebar(name = module['name'], module = module['name'])
 
-        # get class info for the module
-        for mclass in module['classes']:
-            module_classes.append(mclass)
-            cdoc = doc_class(mclass)
-            """TODO starts around here"""
-        # get function info for the module
-        for mfunc in module['functions']:
-            module_functions.append(mfunc)
+            # get class info for the module
+            for mclass in module['classes']:
+                module_classes.append(mclass)
+                self.doc_element(mclass, "class", module['name'] + '/')
+            # get function info for the module
+            for mfunc in module['functions']:
+                module_functions.append(mfunc)
+                self.doc_element(mfunc, "function", module['name'] + '/')
 
-        # generate the page for the module
-        pages[pagename] = ghtml.generate_modulepage(module["name"], module["docstring"], module_classes, module_functions)
+            # generate the page for the module
+            self._pages[pagename] = ghtml.fill_info(name = module["name"], type = "Module", 
+                args = module[''], docstring = module["docstring"], 
+                classes = module_classes, functions = module_functions) 
+
+        self._sidebar += "</ul>"
+
+
+        footer = ghtml.generate_footer(modulename)
+
+        sidebar = sidebar.format(title = modulename)
+        if sidebar:
+            sidebar += '\n<div style="height: 5vh"></div>'
+
+        base = ghtml.fill_base(title = modulename, sidebar = sidebar, footer = footer)
+
+        for page in self._pages:
+            if page == 'style.css':
+                continue
+            #code.interact(local = locals())
+            self._pages[page] = base.format(body = self._pages[page])
+
+
+    def doc_element(name, element_type):
+        """Documents an element recursively, calling itself if necessary"""
+
+        if element_type == "class":
+            element_type = "Class"
+        elif element_type == "function":
+            element_type = "Function"
+        else:
+            element_type = "Object"
 
 
 
-    footer = ghtml.generate_footer(modulename)
-
-    sidebar = sidebar.format(title = modulename, classes = s_classes, fns = s_fns)
-    if sidebar:
-        sidebar += '\n<div style="height: 5vh"></div>'
-
-    base = ghtml.fill_base(title = modulename, sidebar = sidebar, footer = footer)
-
-    for page in pages:
-        if page == 'style.css':
-            continue
-        #code.interact(local = locals())
-        html[page] = base.format(body = html[page])
-
-    return html
+        
 
 
 def main():
@@ -135,8 +123,6 @@ def main():
 
     if re.match("(-+)h | (-+)help | (\?+)", modulename.lower()):
         print("Module name must be in your Python path or current working directory")
-    else:
-        html = documentor(modulename)
 
     if len(sys.argv) > 2:
         outdir = sys.argv[2]
@@ -154,6 +140,8 @@ def main():
         else:
             print("Cancelling doc creation...")
             exit()
+
+    html = documentor(modulename, outdir)
 
     for page in html:
         with open(outdir + '/' + page, 'w') as doc:

@@ -1,6 +1,8 @@
 """Inspects a module and prints the docs for the module and its members"""
 
-import inspect, importlib, re, sys, os
+import inspect, re, sys, os
+from insect import isfunction, isclass, getfullargspec
+from importlib import import_module
 
 
 """
@@ -19,7 +21,7 @@ class Inspector:
     """
 
 
-    def __init__(mainpath):
+    def __init__(self, mainpath):
 
         self.mainpath = mainpath
         self.module_info = []
@@ -72,7 +74,7 @@ class Inspector:
             self.module_info = None
 
 
-    def inspect_module(module_path):
+    def inspect_module(self, module_path):
         """
         Inspects a single module, getting information on classes, functions,
         and the module itself.
@@ -104,7 +106,7 @@ class Inspector:
         return docs
 
 
-    def inspect_members(parent_name, docs, *, c_or_f = False):
+    def inspect_members(self, parent_name, docs, *, c_or_f = False):
         """Gets the members of a module/class/function and calls inspection on each"""
 
         # get members of module/submodule
@@ -118,19 +120,19 @@ class Inspector:
 
             # document each member
             member_namepath = parent_name + '.' + member
-            if eval('inspect.isclass(' + member_namepath + ')'):
+            if eval('isclass(' + member_namepath + ')'):
                 docs['classes'].append(self.inspect_class(member_namepath))
-            elif eval('inspect.isfunction(' + member_namepath + ')'):
+            elif eval('isfunction(' + member_namepath + ')'):
                 docs['functions'].append(self.inspect_function(member_namepath))
 
         pass
 
 
-    def get_args(function_name):
+    def get_args(self, function_name):
         """Gets the arguments and default values for a function. Use the __init__() of a class to
         get class defaults"""
 
-        argspec = inspect.getfullargspec(function_name)
+        argspec = getfullargspec(function_name)
         init_args = argspec.args
         init_vals = argspec.defaults
 
@@ -147,7 +149,7 @@ class Inspector:
         
 
 
-    def inspect_class(class_name):
+    def inspect_class(self, class_name):
         """Inspects a class for docs, subclasses, and subfunctions"""
 
         docs = { "name" : "" , "docstring" : "", "classes": [], "functions" : [], "args" : [] }
@@ -162,7 +164,7 @@ class Inspector:
         return docs
 
 
-    def inspect_function(fn_name):
+    def inspect_function(self, fn_name):
         """Inspects a function for docs, subclasses, and subfunctions"""
 
         docs = { "name" : "" , "docstring" : "", "classes": [], "functions" : [] }
