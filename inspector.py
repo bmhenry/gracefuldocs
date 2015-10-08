@@ -1,16 +1,15 @@
 """Inspects a module and prints the docs for the module and its members"""
 
-import inspect, re, sys, os
-from insect import isfunction, isclass, getfullargspec
+import re, sys, os
+from inspect import isfunction, isclass, getfullargspec
 from importlib import import_module
 
 
 """
 TODO:
 
-check if the module is a directory
- if so, search for .py files and directories inside
- import each and inspect them
+add imported module to globals
+
 """
 
 
@@ -36,6 +35,7 @@ class Inspector:
         # this regex will find anything like '__init__' or '__repr__', etc.
         self.regex = re.compile('__(\S+)__')
 
+        # Is this path a directory (package) or a module?
         if os.path.isdir(mainpath):
             # a directory was given.
             self.directory, self.titlename =  os.path.split(mainpath)
@@ -44,22 +44,26 @@ class Inspector:
             sys.path[0] = self.directory
             
             try:
-                package = importlib.import_module(mainpath)
+                # try to import as a package to get documentation
+                package = import_module(mainpath)
                 self.package_docs = package.__doc__
             except Exception:
+                # oh well, just import the modules
                 pass
-
-            # restore system path
-            sys.path[0] = store_path
+            finally:
+                # restore system path
+                # ALWAYS NEEDS TO BE DONE
+                sys.path[0] = store_path
 
 
             module_paths = []
             for root, dirs, files in os.walk(mainpath):
                 for file in files:
                     fname, fext = os.path.splitext(file)
-                    if fext == '.py' and not regex.match(fname):
-                        modules.append(os.path.join(root, file))
+                    if fext == '.py' and not self.regex.match(fname):
+                        module_paths.append((root,fname))
 
+            print(module_paths)
             for module in module_paths:
                 mod_dict = self.inspect_module(module)
                 if mod_dict is not None:
@@ -80,19 +84,28 @@ class Inspector:
         and the module itself.
         """
 
+        # module_root is the folder/filepath for the module
+        module_root = module_path[0]
+        # module_name is the name of the module
+        module_name = module_path[1]
+
+        stringpath = module_root + '/' + module_name
+
         # fix import path to use working directory instead of gracefuldocs folder
         store_path = sys.path[0]
-        sys.path[0] = os.getcwd()
+        sys.path[0] = module_root
 
         try:
-            cur_module = importlib.import_module(module_path)
+            cur_module = import_module(stringpath)
             module_name = cur_module.__name__
         except Exception as e:
-            print("Couldn't import module " + module_name + ". Is it in your current directory or Python path?")
+            print("Error: " + str(e))
+            print("Couldn't import module " + stringpath + ". Is it in your current directory or Python path?")
             return None
-
-        # return import path to what it was before
-        sys.path[0] = store_path
+        finally:
+            # return import path to what it was before
+            # ALWAYS NEEDS TO BE DONE
+            sys.path[0] = store_path
 
         # the format for documenting a module
         docs = { "name" : "" , "docstring" : "", "classes": [], "functions" : [] }

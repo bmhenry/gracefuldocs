@@ -7,14 +7,9 @@ then produces a static HTML site.
 import inspector
 import ghtml
 
-import code
+import code, sys, re, os, webbrowser
 
-"""
-TODO:
 
-- create the classes.html page and functions.html page
-
-"""
 
 def forcedir(dir_path):
     """Makes sure that a directory exists"""
@@ -25,13 +20,6 @@ def forcedir(dir_path):
         if not os.path.isdir(new_path):
             os.mkdir(new_path)
     pass
-
-
-def parse_args(args, defaults = []):
-    """Takes the args and defaults dicts and puts them into a pretty string"""
-    pass
-
-
 
 
 class Documentor:
@@ -48,17 +36,19 @@ class Documentor:
         title = mod_inspection.titlename
         maindocs = mod_inspection.package_docs
 
-        self._pages = { "index.html": ghtml.generate_index(titlename, fulldata),
+        self._pages = { "index.html": ghtml.generate_index(title, fulldata),
                         "style.css" : ghtml.get_css(),
                         "classes.html" : "",
                         "functions.html" : "",
-                        "gracefuldocs_about.html" : ghtml.gd() }
+                        "gracefuldocs_about.html" : ghtml.get_gd() }
         
         self._sidebar = "<p><a href='index.html'><b>{title}</b></a></p>\n"
         self._sidebar += "<i>Modules:</i><ul>"
 
         # get each module stored in the package data
         for module in fulldata:
+            module_classes = []
+            module_functions = []
             # create a new folder for the module
             forcedir(outputpath + "/" + module["name"])
 
@@ -70,28 +60,29 @@ class Documentor:
 
             # get class info for the module
             for mclass in module['classes']:
-                module_classes.append(mclass)
-                self.doc_element(mclass, "class", module['name'] + '/')
+                module_classes.append(ghtml.element_entry(mclass['name'], module['name']))
+                self.doc_element(mclass, "class", module['name'])
             # get function info for the module
             for mfunc in module['functions']:
-                module_functions.append(mfunc)
-                self.doc_element(mfunc, "function", module['name'] + '/')
+                module_functions.append(ghtml.element_entry(mclass['name'], module['name']))
+                self.doc_element(mfunc, "function", module['name'])
 
             # generate the page for the module
             self._pages[pagename] = ghtml.fill_info(name = module["name"], type = "Module", 
                 args = module[''], docstring = module["docstring"], 
                 classes = module_classes, functions = module_functions) 
 
+        # close up that sidebar list
         self._sidebar += "</ul>"
 
+        # create the footer
+        footer = ghtml.generate_footer(title)
 
-        footer = ghtml.generate_footer(modulename)
+        # fill in the sidebar title and finish it
+        self._sidebar = self._sidebar.format(title = title)
+        self._sidebar += '\n<div style="height: 5vh"></div>'
 
-        sidebar = sidebar.format(title = modulename)
-        if sidebar:
-            sidebar += '\n<div style="height: 5vh"></div>'
-
-        base = ghtml.fill_base(title = modulename, sidebar = sidebar, footer = footer)
+        base = ghtml.fill_base(title = title, sidebar = self._sidebar, footer = footer)
 
         for page in self._pages:
             if page == 'style.css':
@@ -100,19 +91,35 @@ class Documentor:
             self._pages[page] = base.format(body = self._pages[page])
 
 
-    def doc_element(name, element_type):
+    def doc_element(element, element_type, modulename):
         """Documents an element recursively, calling itself if necessary"""
 
         if element_type == "class":
-            element_type = "Class"
+            etype = "Class"
         elif element_type == "function":
-            element_type = "Function"
+            etype = "Function"
         else:
-            element_type = "Object"
+            etype = "Object"
 
+        subclasses = []
+        subfunctions = []
 
+        # get class info for the module
+        for sclass in element['classes']:
+            subclasses.append(ghtml.element_entry(sclass['name'], pagename))
+            self.doc_element(sclass, "class", modulename)
+        # get function info for the module
+        for sfunc in element['functions']:
+            subfunctions.append(ghtml.element_entry(sfunc['name'], pagename))
+            self.doc_element(sfunc, "function", modulename)
 
-        
+        html = ghtml.fill_info( name = element['name'],
+                                type = etype,
+                                args = element['args'],
+                                classes = subclasses,
+                                functions = subfunctions )
+
+        self._pages["{}/{}.html".format(modulename, element['name'])] = html
 
 
 def main():
@@ -141,7 +148,7 @@ def main():
             print("Cancelling doc creation...")
             exit()
 
-    html = documentor(modulename, outdir)
+    html = Documentor(modulename)._pages
 
     for page in html:
         with open(outdir + '/' + page, 'w') as doc:

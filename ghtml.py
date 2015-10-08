@@ -42,9 +42,9 @@ def fill_info(*, name = "{name}", type = "{type}", args = "{args}", classes = "{
 
 def fill_sidebar(*, name = "{name}", module = "{module}"):
     if name == module:
-        html = '<li><a class="sbmodule" href="{module}/{name}.html"</a>{name}</li>'
+        html = '<li><a class="sbmodule" href="{module}/{name}.html"</a>{name}</li>\n'
     else:
-        html = '<li><a class="sbelement" href="{module}/{name}.html"</a>{name}</li>'
+        html = '<li><a class="sbelement" href="{module}/{name}.html"</a>{name}</li>\n'
 
     return html.format(name = name, module = module)
 
@@ -54,8 +54,13 @@ def get_gd():
         return g.read()
 
 
+def element_entry(name, modulename):
+    html = "<li><a class='element_list_entry' href='{modulename}/{name}.html'>{name}</a></li>\n"
+    return html.format(name = name, modulename = modulename)
+
+
 def generate_index(modulename, docstring):
-    html = '<h3><i>{title}:</i></h3><hr/>\n<p class="bodytext">{doc}</p>'
+    html = '<h3><i>{title}:</i></h3><hr/>\n<p class="bodytext">{doc}</p>\n'
     return html.format(title = modulename, doc = docstring)
 
 
