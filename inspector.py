@@ -47,6 +47,7 @@ class Inspector:
                 # try to import as a package to get documentation
                 package = import_module(mainpath)
                 self.package_docs = package.__doc__
+                globals()[package.__name__] = package
             except Exception:
                 # oh well, just import the modules
                 pass
@@ -84,20 +85,22 @@ class Inspector:
         and the module itself.
         """
 
-        # module_root is the folder/filepath for the module
+        # module_root is the python object/module path
         module_root = module_path[0]
         # module_name is the name of the module
         module_name = module_path[1]
 
-        stringpath = module_root + '/' + module_name
+        stringpath = module_root + '.' + module_name
 
         # fix import path to use working directory instead of gracefuldocs folder
         store_path = sys.path[0]
         sys.path[0] = module_root
 
+        # make an attempt to import the module
         try:
             cur_module = import_module(stringpath)
             module_name = cur_module.__name__
+            #globals()['module_name'] = cur_module
         except Exception as e:
             print("Error: " + str(e))
             print("Couldn't import module " + stringpath + ". Is it in your current directory or Python path?")
