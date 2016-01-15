@@ -1,0 +1,47 @@
+{
+  "classes": [
+    {
+      "classes": [],
+      "docstring": "",
+      "name": "TestClass",
+      "functions": [
+        {
+          "docstring": "Docstring in the wrong place. Can we find it?",
+          "name": "__init__",
+          "parameters": [],
+          "paramters": [
+            "self",
+            "parent = 7",
+            "test = 'something'",
+            "*",
+            "somethingelse = 'nada'"
+          ]
+        },
+        {
+          "docstring": "This is just a test function.",
+          "name": "test",
+          "parameters": [],
+          "paramters": [
+            "self",
+            "s1",
+            "s2",
+            "s3 = 'something'"
+          ]
+        }
+      ]
+    }
+  ],
+  "docstring": "This is some documentation.",
+  "name": "test",
+  "functions": [
+    {
+      "docstring": "A function",
+      "name": "function",
+      "parameters": [],
+      "paramters": [
+        "x",
+        "y = 10"
+      ]
+    }
+  ]
+}
