@@ -18,6 +18,34 @@ class Inspector:
 
 	If the path is to a directory, Inspector will determine whether it's a
 	Python package or whether it just contains Python files.
+
+
+	Information is stored in Inspector.module_info as follows:
+
+	self.module_info = 
+	{
+		"name": "",
+		"docstring": "",
+		"classes": 
+		[
+			{
+				"name": "",
+				"docstring": "",
+				"classes": [],
+				"functions": []	  
+			},
+			etc. for other classes
+		],
+		"functions": 
+		[
+			{
+				"name": "",
+				"docstring": "",
+				"parameters": []
+			},
+			etc. for other functions
+		]
+	}
 	"""
 
 	def __init__(self, mainpath):
@@ -44,7 +72,6 @@ class Inspector:
 
 		elif os.path.isfile(mainpath):
 			# file
-
 			# get directory and determine the title of the site
 			self.directory, filename = os.path.split(mainpath)
 			self.title = os.path.splitext(filename)[0]
