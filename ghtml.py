@@ -1,5 +1,6 @@
 import os, sys, time
 
+# Directory functions:
 
 def forcedir(dir_path):
     """Makes sure that a directory exists"""
@@ -17,21 +18,12 @@ def html_dir():
     return os.path.abspath(sys.path[0]) + '/web_base/'
 
 
+# HTML from templates functions
+
 def get_base():
     """Returns the base html page as text"""
     with open(html_dir() + 'base_page.html', 'r') as page:
         return page.read()
-
-
-def fill_base(*, title = "{title}", body = "{body}", sidebar = "{sidebar}", footer = "{footer}"):
-    """Gets the base html page and fills it with the given information"""
-    base = get_base()
-    base = base.format(title = title, 
-                       sidebar = sidebar, 
-                       body = body, 
-                       footer = footer)
-
-    return base
 
 
 def get_css():
@@ -46,8 +38,27 @@ def get_info():
         return info.read()
 
 
+def get_gd():
+    """Gets the 'About' page for GracefulDocs and returns it as text"""
+    with open(html_dir() + 'gracefuldocs_about.html') as g:
+        return g.read()
+
+
+# Fill templates functions
+
+def fill_base(*, title = "{title}", body = "{body}", sidebar = "{sidebar}", footer = "{footer}"):
+    """Gets the base html page and fills it with the given information"""
+    base = get_base()
+    base = base.format(title = title, 
+                       sidebar = sidebar, 
+                       body = body, 
+                       footer = footer)
+
+    return base
+
+
 def fill_info(*, name = "{name}", type = "{type}", args = "{args}", classes = "{classes}", functions = "{functions} "):
-    """Gets teh base html page for a class/function and fills it with the given information"""
+    """Gets the base html page for a class/function and fills it with the given information"""
     info = get_info()
     info = info.format( name = name, 
                         args = args, 
@@ -55,27 +66,6 @@ def fill_info(*, name = "{name}", type = "{type}", args = "{args}", classes = "{
                         functions = functions )
 
     return info
-
-
-def fill_sidebar(*, name = "{name}", module = "{module}"):
-    """Returns a list element for the sidebar using the given input information"""
-    if name == module:
-        html = '<li><a class="sbmodule" href="{module}/{name}.html"</a>{name}</li>\n'
-    else:
-        html = '<li><a class="sbelement" href="{module}/{name}.html"</a>{name}</li>\n'
-
-    return html.format(name = name, module = module)
-
-
-def get_gd():
-    """Gets the 'About' page for GracefulDocs and returns it as text"""
-    with open(html_dir() + 'gracefuldocs_about.html') as g:
-        return g.read()
-
-
-def element_entry(name, modulename):
-    html = "<li><a class='element_list_entry' href='{modulename}/{name}.html'>{name}</a></li>\n"
-    return html.format(name = name, modulename = modulename)
 
 
 def generate_index(modulename, docstring):
@@ -87,7 +77,12 @@ def generate_index(modulename, docstring):
 def generate_footer(modulename):
     """Creates the footer for the bottom of the pages using the module name"""
     curtime = time.localtime()
-    return "<p>" + modulename + " documentation generated on " \
-                      + str(curtime.tm_mon) + "/" + str(curtime.tm_mday) \
-                      + "/" + str(curtime.tm_year) \
-                      + "</p><p>Written in Python</p>"
+    time_string = str(curtime.tm_mon) + "/" + str(curtime.tm_mday) + "/" + str(curtime.tm_year)
+    return_string = "<p>" + modulename + " documentation generated on " + time_string + "</p>" 
+    return_string += "<p>Written in Python</p>"
+    
+    return return_string
+
+def generate_nav_link(element_name):
+    sidebar_string = "<li class='sb_el_link'><a href='elements/{element_name}.html'>{element_name}</a></li>".format(element_name = element_name)
+    return sidebar_string
