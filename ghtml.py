@@ -46,9 +46,13 @@ def get_gd():
 
 # Fill templates functions
 
-def fill_base(*, title = "{title}", body = "{body}", sidebar = "{sidebar}", footer = "{footer}"):
+def fill_base(*, title = "{title}", body = "", sidebar = "{sidebar}", footer = "{footer}"):
 	"""Gets the base html page and fills it with the given information"""
 	base = get_base()
+
+	if body == (None or ""):
+		body = "<i>This section is empty.</i>"
+
 	base = base.format(title = title, 
 					   sidebar = sidebar, 
 					   body = body, 
@@ -57,10 +61,22 @@ def fill_base(*, title = "{title}", body = "{body}", sidebar = "{sidebar}", foot
 	return base
 
 
-def fill_info(*, name = "{name}", type = "{type}", args = "{args}", classes = "{classes}", functions = "{functions} "):
+def fill_info(*, name = "", type = "", args = "", docstring = "", classes = "", functions = ""):
 	"""Gets the base html page for a class/function and fills it with the given information"""
 	info = get_info()
-	info = info.format( name = name, args = args, classes = classes, functions = functions)
+
+	if name == (None or ""):
+		name = "<i>No Name</i>"
+	if docstring == (None or ""):
+		docstring = "<i>No documentation</i>"
+	if classes == (None or ""):
+		classes = "<i>None</i>"
+	if functions == (None or ""):
+		functions == "<i>None</i>"
+
+	info = info.format( name = name, type = type, 
+						args = args, docstring = docstring, 
+						classes = classes, functions = functions)
 
 	return info
 
@@ -71,15 +87,15 @@ def generate_index(modulename, docstring):
 	return html.format(title = modulename, doc = docstring)
 
 
-def generate_footer(modulename):
-	"""Creates the footer for the bottom of the pages using the module name"""
+def generate_footer():
+	"""Creates the footer for the bottom of the pages"""
 	curtime = time.localtime()
 	time_string = str(curtime.tm_mon) + "/" + str(curtime.tm_mday) + "/" + str(curtime.tm_year)
-	return_string = "<p>" + modulename + " documentation generated on " + time_string + "</p>" 
+	return_string = "<p>Documentation updated on " + time_string + "</p>" 
 	return_string += "<p>Written in Python</p>"
 	
 	return return_string
 
 def generate_nav_link(element_name):
-	sidebar_string = "<li class='sb_el_link'><a href='elements/{element_name}.html'>{element_name}</a></li>".format(element_name = element_name)
+	sidebar_string = '<li class="sb_el_link"><a href="{element_name}.html">{element_name}</a></li>'.format(element_name = element_name)
 	return sidebar_string

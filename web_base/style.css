@@ -51,9 +51,8 @@ body {
     border-color: #A2C1C0;
     float: left;
     padding:20px;
-    color: #;
     background-color: #E4E9E8;
-    z-index: -1;
+    /*z-index: -1;*/
 }
 
 #sidebar a {
@@ -80,4 +79,36 @@ body {
 #footertext {
     text-decoration: none;
     color: #3a3a3a;
+}
+
+/*
+    element_info.html styles
+*/
+
+.el_name {
+    color: #2573b2;
+    font-size: 2em;
+}
+
+.el_type {
+    font-size: 1.5em;
+    font-style: italic;
+    color: #888888;
+}
+
+.el_args {
+    font-size: 1.7em;
+}
+
+.el_docstring {
+    margin-left: 3em;
+    font-size: 1.2;
+}
+
+.el_subclass_header {
+    font-size: 1.3em;
+}
+
+.el_subfunction_header {
+    font-size: 1.3em;
 }

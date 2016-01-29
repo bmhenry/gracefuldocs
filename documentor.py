@@ -16,6 +16,12 @@ import inspector
 import ghtml
 
 
+# TODO:
+# copyright notice at the bottom for their module?
+# generate_sidebar instead of the awkward adding html to it piece by piece
+#    hmmm maybe not this would mean making then parsing another dict or something
+#    unless the sidebar only has the highest level elements
+
 
 class Generator:
 	"""
@@ -45,6 +51,8 @@ class Generator:
 		pages = {
 			"index.html": ghtml.generate_index(title, data["docstring"]),
 			"style.css": ghtml.get_css(),
+			"classes.html": "",
+			"functions.html": "",
 			"gracefuldocs_about.html": ghtml.get_gd()
 		}
 
@@ -53,7 +61,7 @@ class Generator:
 		self.sidebar = self.sidebar.format(title = title)
 
 		# create the page footer
-		self.footer = ghtml.generate_footer(title)
+		self.footer = ghtml.generate_footer()
 
 		self.mod_info = mod_info
 		self.data = data
@@ -147,8 +155,8 @@ class Generator:
 		self.sidebar_modules.append(sidebar_link)
 
 		# create the page body
-		page = ghtml.fill_info(name = class_item["name"], type = "class")
-		self.pages["elements/" + class_item["name"]] = page
+		page = ghtml.fill_info(name = class_item["name"], type = "Class")
+		self.pages[class_item["name"] + ".html"] = page
 
 		for subclass in class_item['classes']:
 			#TODO
@@ -161,7 +169,7 @@ class Generator:
 		pass
 
 
-	def _doc_functions(self, function_item):
+	def _doc_function(self, function_item):
 		#TODO
 		pass
 
@@ -173,6 +181,8 @@ class Generator:
 			self.log.info("Couldn't get any information about the module.")
 
 		for page in self.pages:
+			newpath = savepath + '/' + page
+			ghtml.forcedir(os.path.split(newpath)[0])
 			with open(savepath + '/' + page, 'w') as doc:
 				doc.write(self.pages[page])
 
