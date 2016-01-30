@@ -67,6 +67,8 @@ class Generator:
 		self.data = data
 		self.title = title
 		self.pages = pages
+		self.classes = []
+		self.functions = []
 
 		# create other pages for the classes/functions
 		self._create_pages()
@@ -155,8 +157,13 @@ class Generator:
 		self.sidebar_modules.append(sidebar_link)
 
 		# create the page body
-		page = ghtml.fill_info(name = class_item["name"], type = "Class")
+		page = ghtml.fill_info(
+			name = class_item["name"], type = "Class", 
+			args = class_item["args"], docstring = class_item["docstring"])
 		self.pages[class_item["name"] + ".html"] = page
+
+		# add to total class list
+		self.classes.append((class_item["name"], ))
 
 		for subclass in class_item['classes']:
 			#TODO
@@ -170,7 +177,24 @@ class Generator:
 
 
 	def _doc_function(self, function_item):
-		#TODO
+		"""
+		Gets a function item as created by the Inspector and creates the body for the
+		corresponding html page.
+
+		This page is automatically added to Generator.pages, and a sidebar link is
+		automatically added to the sidebar.
+		"""
+		sidebar_link = None
+
+		# create the sidebar link
+		sidebar_link = ghtml.generate_nav_link(function_item["name"])
+		self.sidebar_modules.append(sidebar_link)
+
+		# create the page body
+		page = ghtml.fill_info(
+			name = function_item['name'], type = 'Function', 
+			args = function_item["args"], docstring = function_item["docstring"])
+		self.pages[function_item["name"] + ".html"] = page
 		pass
 
 

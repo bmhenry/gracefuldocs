@@ -134,6 +134,7 @@ class Inspector:
 		docs = {
 			"name": "",
 			"docstring": "",
+			"args": "",
 			"classes": [],
 			"functions": []
 		}
@@ -155,6 +156,9 @@ class Inspector:
 			if inspect.isclass(member_object):
 				docs['classes'].append(self.inspect_class(member_object))
 			elif inspect.isfunction(member_object):
+				obj_docs = self.inspect_function(member_object)
+				if obj_docs['name'] == '__init__':
+					docs["args"] = obj_docs["args"]
 				docs['functions'].append(self.inspect_function(member_object))
 
 		return docs
@@ -166,7 +170,7 @@ class Inspector:
 		docs = {
 			"name": "",
 			"docstring": "",
-			"parameters": []
+			"args": []
 		}
 
 		docs["name"] = obj.__name__
@@ -174,11 +178,11 @@ class Inspector:
 
 		# get function parameters
 		args = inspect.signature(obj).parameters
-		docs["parameters"] = []
 
 		#this will separate keyword only args from positional ones
 		arg_list = []
 		kw_only = []
+
 		for arg in args:
 			param = args[arg]
 
@@ -194,7 +198,8 @@ class Inspector:
 
 		if len(kw_only) > 0:
 			arg_list += ['*'] + kw_only
-		docs["paramters"] = arg_list
+
+		docs["args"] = ', '.join(arg_list)
 
 		return docs
 
