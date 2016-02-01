@@ -30,7 +30,9 @@ class Inspector:
 		[
 			{
 				"name": "",
+				"parents": "",  # for example, like "packagename/modulename/"
 				"docstring": "",
+				"args": "",
 				"classes": [],
 				"functions": []	  
 			},
@@ -40,7 +42,9 @@ class Inspector:
 		[
 			{
 				"name": "",
+				"parents": "",  # for example, like "packagename/modulename/classname"
 				"docstring": "",
+				"args": "",
 				"parameters": []
 			},
 			etc. for other functions
@@ -113,6 +117,9 @@ class Inspector:
 		docs["name"] = module.__name__
 		docs["docstring"] = module.__doc__.strip() if module.__doc__ != None else ""
 
+		# create the parent name string to pass to children
+		parent_str = module.__name__ + "/"
+
 		members = dir(module)
 		for member in members:
 			# don't get __init__, __repr__, etc.
@@ -121,19 +128,20 @@ class Inspector:
 
 			member_object = getattr(module, member)
 			if inspect.isclass(member_object):
-				docs['classes'].append(self.inspect_class(member_object))
+				docs["classes"].append(self.inspect_class(member_object, parent_str))
 			elif inspect.isfunction(member_object):
-				docs['functions'].append(self.inspect_function(member_object))
+				docs["functions"].append(self.inspect_function(member_object, parent_str))
 
 		return docs
 
 
-	def inspect_class(self, obj):
+	def inspect_class(self, obj, parents):
 		"""Inspects a class for docs, subclasses, and subfunctions"""
 		
 		docs = {
 			"name": "",
 			"docstring": "",
+			"parents": parents,
 			"args": "",
 			"classes": [],
 			"functions": []
@@ -145,6 +153,9 @@ class Inspector:
 		#  __init__ description
 		docs["docstring"] = obj.__doc__.strip() if obj.__doc__ != None else ""
 
+		# create parent string to pass to children
+		parent_str = parents + obj.__name__ + "/"
+
 		members = dir(obj)
 		for member in members:
 			# don't get __init__, __repr__, etc.
@@ -154,22 +165,23 @@ class Inspector:
 			member_object = getattr(obj, member)
 			
 			if inspect.isclass(member_object):
-				docs['classes'].append(self.inspect_class(member_object))
+				docs["classes"].append(self.inspect_class(member_object, parent_str))
 			elif inspect.isfunction(member_object):
-				obj_docs = self.inspect_function(member_object)
+				obj_docs = self.inspect_function(member_object, parent_str)
 				if obj_docs['name'] == '__init__':
 					docs["args"] = obj_docs["args"]
-				docs['functions'].append(self.inspect_function(member_object))
+				docs['functions'].append(obj_docs)
 
 		return docs
 
 
-	def inspect_function(self, obj):
+	def inspect_function(self, obj, parents):
 		"""Inspects a function for docs, subclasses, and subfunctions"""
 		
 		docs = {
 			"name": "",
 			"docstring": "",
+			"parents": parents,
 			"args": []
 		}
 

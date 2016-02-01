@@ -61,22 +61,34 @@ def fill_base(*, title = "{title}", body = "", sidebar = "{sidebar}", footer = "
 	return base
 
 
-def fill_info(*, name = "", type = "", args = "", docstring = "", classes = "", functions = ""):
+def fill_info(*, name = "", type = "", args = "", docstring = "", classes = None, functions = None):
 	"""Gets the base html page for a class/function and fills it with the given information"""
 	info = get_info()
 
-	if name == (None or ""):
+	if name is None or name == "":
 		name = "<i>No Name</i>"
-	if docstring == (None or ""):
+
+	if docstring is None or docstring == "":
 		docstring = "<i>No documentation</i>"
-	if classes == (None or ""):
-		classes = "<i>None</i>"
-	if functions == (None or ""):
-		functions == "<i>None</i>"
+
+	class_str = ""
+	if classes is None or classes == "" or len(classes) < 1:
+		class_str = "<i>None</i>"
+	else:
+		for class_item in classes:
+			string = "<li class='el_subclass_link'><a href='{class_name}.html'>{class_name}</a></li>"
+			class_str += string.format(class_name = class_item["name"])
+
+	function_str = ""
+	if functions is None or functions == "" or len(functions) < 1:
+		function_str = "<i>None</i>"
+	else:
+		string = "<li class='el_subfunction_link'><a href='{name}.html'>{name}</a></li>"
+		function_str = '\n'.join([string.format(name = func["name"]) for func in functions])
 
 	info = info.format( name = name, type = type, 
 						args = args, docstring = docstring, 
-						classes = classes, functions = functions)
+						classes = class_str, functions = function_str)
 
 	return info
 

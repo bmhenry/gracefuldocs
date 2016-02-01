@@ -51,8 +51,6 @@ class Generator:
 		pages = {
 			"index.html": ghtml.generate_index(title, data["docstring"]),
 			"style.css": ghtml.get_css(),
-			"classes.html": "",
-			"functions.html": "",
 			"gracefuldocs_about.html": ghtml.get_gd()
 		}
 
@@ -159,19 +157,11 @@ class Generator:
 		# create the page body
 		page = ghtml.fill_info(
 			name = class_item["name"], type = "Class", 
-			args = class_item["args"], docstring = class_item["docstring"])
+			args = class_item["args"], docstring = class_item["docstring"],
+			classes = class_item["classes"], functions = class_item["functions"])
 		self.pages[class_item["name"] + ".html"] = page
 
 		# add to total class list
-		self.classes.append((class_item["name"], ))
-
-		for subclass in class_item['classes']:
-			#TODO
-			pass
-
-		for subfunction in class_item['functions']:
-			#TODO
-			pass
 
 		pass
 

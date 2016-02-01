@@ -8,20 +8,20 @@ class TestClass:
 		"""Docstring in the wrong place. Can we find it?"""
 		print(parent)
 
-	def test(self, s1, s2, s3 = "something"):
+	def subfunction_in_class(self, s1, s2, s3 = "something"):
 		"""This is just a test function."""
 		print(s1, s2, s3)
 
 
-def function(x, y = 10):
+def test_function(x, y = 10):
 	"""A function"""
 	print(x * y * 2)
 
-	class ClassX:
+	class ClassX_in_function:
 		"""This is a subclass"""
 		def __init__(self, parent):
 			return
 
-	def function2(z, theta = 20):
+	def subfunction_in_function(z, theta = 20):
 		"""A sub function"""
 		print(z * theta * 3.14)
