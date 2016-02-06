@@ -49,13 +49,15 @@ class Generator:
 
 		# create html pages from inspection results
 		pages = {
-			"index.html": ghtml.generate_index(title, data["docstring"]),
-			"style.css": ghtml.get_css(),
-			"gracefuldocs_about.html": ghtml.get_gd()
+			"/index.html": ghtml.generate_index(title, data["docstring"]),
+			"/style.css": ghtml.get_css(),
+			"/classes.html": "",
+			"/functions.html": "",
+			"/gracefuldocs_about.html": ghtml.get_gd()
 		}
 
 		# generate the sidebar navigation menu
-		self.sidebar = "<p><a href='index.html'><b>{title}</b></a></p>\n"
+		self.sidebar = "<p><a href='/index.html'><b>{title}</b></a></p>\n"
 		self.sidebar = self.sidebar.format(title = title)
 
 		# create the page footer
@@ -120,7 +122,19 @@ class Generator:
 			self.log.info("Couldn't get any information about the module.")
 			return
 
+		# unless this is the index file, it needs to go in the html subdirectory
+		newpages = {}
 		for page in self.pages:
+			if page != "/index.html":
+				newpages["html/" + page] = self.pages[page]
+		newpages["/index.html"] = self.pages["/index.html"]
+
+		# grab the updated version of pages
+		self.pages = newpages
+
+		# iterate through pages and add html frame
+		for page in self.pages:
+			# dont stick the css into an html file
 			if page == "style.css":
 				continue
 
@@ -133,7 +147,7 @@ class Generator:
 		pass
 
 
-	def _doc_class(self, class_item):
+	def _doc_class(self, class_item, child = False):
 		"""
 		Gets a class item as created by the Inspector and creates the body for
 		and html page. 
@@ -151,22 +165,29 @@ class Generator:
 			return
 
 		# create the sidebar link for this class
-		sidebar_link = ghtml.generate_nav_link(class_item["name"])
-		self.sidebar_modules.append(sidebar_link)
+		if child == False:
+			sidebar_link = ghtml.generate_nav_link(class_item["name"], class_item["parents"])
+			self.sidebar_modules.append(sidebar_link)
 
 		# create the page body
 		page = ghtml.fill_info(
 			name = class_item["name"], type = "Class", 
 			args = class_item["args"], docstring = class_item["docstring"],
 			classes = class_item["classes"], functions = class_item["functions"])
-		self.pages[class_item["name"] + ".html"] = page
+		pagename = class_item["parents"] + class_item["name"] + ".html"
 
-		# add to total class list
+		for subclass in class_item["classes"]:
+			self._doc_class(subclass, child = True)
+		for subfunction in class_item["functions"]:
+			self._doc_function(subfunction, child = True)
+
+		# add the page
+		self.pages[pagename] = page
 
 		pass
 
 
-	def _doc_function(self, function_item):
+	def _doc_function(self, function_item, child = False):
 		"""
 		Gets a function item as created by the Inspector and creates the body for the
 		corresponding html page.
@@ -177,14 +198,19 @@ class Generator:
 		sidebar_link = None
 
 		# create the sidebar link
-		sidebar_link = ghtml.generate_nav_link(function_item["name"])
-		self.sidebar_modules.append(sidebar_link)
+		if child == False:
+			sidebar_link = ghtml.generate_nav_link(function_item["name"], function_item["parents"])
+			self.sidebar_modules.append(sidebar_link)
 
 		# create the page body
 		page = ghtml.fill_info(
 			name = function_item['name'], type = 'Function', 
 			args = function_item["args"], docstring = function_item["docstring"])
-		self.pages[function_item["name"] + ".html"] = page
+		pagename = function_item["parents"] + function_item["name"] + ".html"
+
+		# add the page
+		self.pages[pagename] = page
+
 		pass
 
 

@@ -5,11 +5,33 @@ import os, sys, time
 def forcedir(dir_path):
 	"""Makes sure that a directory exists"""
 
-	subdirs = dir_path.strip().split('\\')
-	for path in range(len(subdirs)):
-		new_path = '\\'.join(subdirs)
-		if not os.path.isdir(new_path):
-			os.mkdir(new_path)
+	# TODO: rewrite this to not try to do some sort of high level directory rewrite like a new T:/ or something
+
+	# check if the path already exists
+	if os.path.isdir(dir_path):
+		return
+
+	# if not, make all the required folders
+	# get all the folders required to be made
+	subdirs = []
+	while dir_path != "":
+		dir_path, folder = os.path.split(dir_path)
+
+		if folder != "":
+			subdirs.insert(0, folder)
+		else:
+			if dir_path != "":
+				subdirs.insert(0, dir_path)
+			break
+
+	# check each path along the line and make sure it exists
+	for path_combo in range(len(subdirs)):
+		path = '/'.join(subdirs[0 : path_combo + 1])
+		print(path)
+
+		if not os.path.isdir(path):
+			os.mkdir(path)
+
 	pass
 
 
@@ -76,15 +98,15 @@ def fill_info(*, name = "", type = "", args = "", docstring = "", classes = None
 		class_str = "<i>None</i>"
 	else:
 		for class_item in classes:
-			string = "<li class='el_subclass_link'><a href='{class_name}.html'>{class_name}</a></li>"
-			class_str += string.format(class_name = class_item["name"])
+			string = "<li class='el_subclass_link'><a href='/html/{parents}{class_name}.html'>{class_name}</a></li>\n"
+			class_str += string.format(class_name = class_item["name"], parents = class_item["parents"])
 
 	function_str = ""
 	if functions is None or functions == "" or len(functions) < 1:
 		function_str = "<i>None</i>"
 	else:
-		string = "<li class='el_subfunction_link'><a href='{name}.html'>{name}</a></li>"
-		function_str = '\n'.join([string.format(name = func["name"]) for func in functions])
+		string = "<li class='el_subfunction_link'><a href='/html/{parents}{name}.html'>{name}</a></li>"
+		function_str = '\n'.join([string.format(name = func["name"], parents = func["parents"]) for func in functions])
 
 	info = info.format( name = name, type = type, 
 						args = args, docstring = docstring, 
@@ -108,6 +130,6 @@ def generate_footer():
 	
 	return return_string
 
-def generate_nav_link(element_name):
-	sidebar_string = '<li class="sb_el_link"><a href="{element_name}.html">{element_name}</a></li>'.format(element_name = element_name)
+def generate_nav_link(name, parents):
+	sidebar_string = '<li class="sb_el_link"><a href="/html/{parents}{name}.html">{name}</a></li>'.format(name = name, parents = parents)
 	return sidebar_string

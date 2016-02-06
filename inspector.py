@@ -60,8 +60,7 @@ class Inspector:
 		# make sure that the file/folder exists
 		if not os.path.exists(mainpath):
 			print("Couldn't find the specified path.",
-					"Make sure it's in your current directory or that you gave"
-					+ " the full path.")
+					"Make sure it's in your current directory or that you gave the full path.")
 			self.module_info = None
 			return
 
