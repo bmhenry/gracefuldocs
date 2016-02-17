@@ -2,6 +2,25 @@ import os, sys, time
 
 # Directory functions:
 
+def get_subdirs(dir_path):
+	"""Returns a list of all directories in a path string"""
+
+	ignores = ["", "\\", "/"]
+
+	subdirs = []
+	while dir_path != "":
+		dir_path, folder = os.path.split(dir_path)
+
+		if folder not in ignores:
+			subdirs.insert(0, folder)
+		else:
+			if dir_path not in ignores:
+				subdirs.insert(0, dir_path)
+			break
+
+	return subdirs
+
+
 def forcedir(dir_path):
 	"""Makes sure that a directory exists"""
 
@@ -13,16 +32,7 @@ def forcedir(dir_path):
 
 	# if not, make all the required folders
 	# get all the folders required to be made
-	subdirs = []
-	while dir_path != "":
-		dir_path, folder = os.path.split(dir_path)
-
-		if folder != "":
-			subdirs.insert(0, folder)
-		else:
-			if dir_path != "":
-				subdirs.insert(0, dir_path)
-			break
+	subdirs = get_subdirs()
 
 	# check each path along the line and make sure it exists
 	for path_combo in range(len(subdirs)):
@@ -68,14 +78,15 @@ def get_gd():
 
 # Fill templates functions
 
-def fill_base(*, title = "{title}", body = "", sidebar = "{sidebar}", footer = "{footer}"):
+def fill_base(*, title = "{title}", root_url = "", body = "", sidebar = "{sidebar}", footer = "{footer}"):
 	"""Gets the base html page and fills it with the given information"""
 	base = get_base()
 
 	if body == (None or ""):
 		body = "<i>This section is empty.</i>"
 
-	base = base.format(title = title, 
+	base = base.format(title = title,
+					   root_url = root_url,
 					   sidebar = sidebar, 
 					   body = body, 
 					   footer = footer)
@@ -98,14 +109,14 @@ def fill_info(*, name = "", type = "", args = "", docstring = "", classes = None
 		class_str = "<i>None</i>"
 	else:
 		for class_item in classes:
-			string = "<li class='el_subclass_link'><a href='/html/{parents}{class_name}.html'>{class_name}</a></li>\n"
+			string = "<li class='el_subclass_link'><a href='html/{parents}{class_name}.html'>{class_name}</a></li>\n"
 			class_str += string.format(class_name = class_item["name"], parents = class_item["parents"])
 
 	function_str = ""
 	if functions is None or functions == "" or len(functions) < 1:
 		function_str = "<i>None</i>"
 	else:
-		string = "<li class='el_subfunction_link'><a href='/html/{parents}{name}.html'>{name}</a></li>"
+		string = "<li class='el_subfunction_link'><a href='html/{parents}{name}.html'>{name}</a></li>"
 		function_str = '\n'.join([string.format(name = func["name"], parents = func["parents"]) for func in functions])
 
 	info = info.format( name = name, type = type, 
@@ -131,5 +142,5 @@ def generate_footer():
 	return return_string
 
 def generate_nav_link(name, parents):
-	sidebar_string = '<li class="sb_el_link"><a href="/html/{parents}{name}.html">{name}</a></li>'.format(name = name, parents = parents)
+	sidebar_string = '<li class="sb_el_link"><a href="html/{parents}{name}.html">{name}</a></li>'.format(name = name, parents = parents)
 	return sidebar_string

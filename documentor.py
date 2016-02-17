@@ -138,8 +138,12 @@ class Generator:
 			if page == "style.css":
 				continue
 
+			# see how many subdirectory levels the page is
+			subdirnum = len(ghtml.get_subdirs(page))
+
 			# take the page body information and fill a base html page with it
-			self.pages[page] = ghtml.fill_base(title = self.title, 
+			self.pages[page] = ghtml.fill_base( title = self.title,
+												root_url = (subdirnum - 1) * '../',
 												body = self.pages[page],
 												sidebar = self.sidebar,
 												footer = self.footer)

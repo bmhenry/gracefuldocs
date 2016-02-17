@@ -2,26 +2,27 @@
 <html>
 	<head>
 		<title>{title}</title>
-		<link rel="stylesheet" type="text/css" href="/html/style.css">
-		<link rel="shortcut icon" type="image/x-icon" href="/gracefuldocs.ico">
+		<base href="./{root_url}"/>
+		<link rel="stylesheet" type="text/css" href="html/style.css">
+		<link rel="shortcut icon" type="image/x-icon" href="gracefuldocs.ico">
 	</head>
 	<body>
 
 		<div id="header">
-			<a href="/index.html" id="title"><i>{title}</i></a>
+			<a href="index.html" id="title"><i>{title}</i></a>
 		</div>
 
 		<div id="navbar">
-			<a href="/index.html">{title}</a>
-			<a href="/html/classes.html">Classes</a>
-			<a href="/html/functions.html">Functions</a>
+			<a href="index.html">{title}</a>
+			<a href="html/classes.html">Classes</a>
+			<a href="html/functions.html">Functions</a>
 		</div>
 
 		<div>
 			<div id="sidebar">
 			{sidebar}
 			<p>
-				<a href="/html/gracefuldocs_about.html">GracefulDocs</a>
+				<a href="html/gracefuldocs_about.html">GracefulDocs</a>
 			</p>
 			</div>
 
@@ -32,7 +33,7 @@
 
 		<div id="footer">
 			<span>{footer}</span>
-			<a id="footertext" href="/html/gracefuldocs_about.html"><i>Powered by GracefulDocs</i></a>
+			<a id="footertext" href="html/gracefuldocs_about.html"><i>Powered by GracefulDocs</i></a>
 		</div>
 	</body>
 </html>

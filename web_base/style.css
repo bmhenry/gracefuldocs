@@ -113,12 +113,14 @@ body {
     font-size: 1.3em;
 }
 
-.el_subclass_link .el_subclass_link>a {
-    text-decoration: none;
-    font-size: 1.1em
-}
-
-.el_subfunction_link .el_subfunction_link>a{
+.el_subclass_link > a {
     text-decoration: none;
     font-size: 1.1em;
+    color: #9d00b2;
+}
+
+.el_subfunction_link>a{
+    text-decoration: none;
+    font-size: 1.1em;
+    color: #0bb200;
 }
