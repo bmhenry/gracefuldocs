@@ -1,18 +1,6 @@
-"""Inspects a module and returns this information for documentation"""
+"""
+Contains the Inspector class:
 
-import inspect  # uses isfunction, isclass, signature
-import importlib  # uses import_module
-import re
-import sys
-import os
-
-import code
-import json
-
-
-
-class Inspector:
-	"""
 	Inspects a file or directory given the directory, then returns a dictionary
 	containing the package or module's information.
 
@@ -50,6 +38,70 @@ class Inspector:
 			etc. for other functions
 		]
 	}
+
+	README and LICENSE files will usually be found and included. If these are written in
+	plaintext or HTML, they will be included as such. If they are writen in Markdown, their
+	contents will be converted to HTML for display.
+
+	Inspector will not move/destroy/modify in any way your existing files of any type.
+"""
+
+import inspect  # uses isfunction, isclass, signature
+import importlib  # uses import_module
+import re
+import sys
+import os
+
+import code
+import json
+
+
+
+# TODO: include readme and license files, convert markdown to html
+class Inspector:
+	"""Inspects a file or directory given the directory, then returns a dictionary
+	containing the package or module's information.
+
+	If the path is to a directory, Inspector will determine whether it's a
+	Python package or whether it just contains Python files.
+
+
+	Information is stored in Inspector.module_info as follows:
+
+	self.module_info = 
+	{
+		"name": "",
+		"docstring": "",
+		"classes": 
+		[
+			{
+				"name": "",
+				"parents": "",  # for example, like "packagename/modulename/"
+				"docstring": "",
+				"args": "",
+				"classes": [],
+				"functions": []	  
+			},
+			etc. for other classes
+		],
+		"functions": 
+		[
+			{
+				"name": "",
+				"parents": "",  # for example, like "packagename/modulename/classname"
+				"docstring": "",
+				"args": "",
+				"parameters": []
+			},
+			etc. for other functions
+		]
+	}
+
+	README and LICENSE files will usually be found and included. If these are written in
+	plaintext or HTML, they will be included as such. If they are writen in Markdown, their
+	contents will be converted to HTML for display.
+
+	Inspector will not move/destroy/modify in any way your existing files of any type.
 	"""
 
 	def __init__(self, mainpath):
@@ -66,11 +118,15 @@ class Inspector:
 
 		# regex to find anything like '__init__' or '__repr__', etc.
 		self.regex = re.compile('__(\S+)__')
+		self.py_regex = re.compile('((\S+).py)|(readme)|(license)', flags = re.IGNORECASE)
 
 		# directory (package) or module?
 		if os.path.isdir(mainpath):
 			# directory
-			# TODO
+			# determine the title of the package from the name of this directory
+			self.title = ghtml.get_subdirs(mainpath)[-1]
+			
+			self.module_info = self.inspect_dir(mainpath)
 			pass
 
 		elif os.path.isfile(mainpath):
@@ -88,7 +144,17 @@ class Inspector:
 
 
 	def inspect_dir(self, fullpath):
-		# TODO
+		"""Inspects a directory or Python package for directories, for Python code files ending in '.py'
+		(including '__init__.py' and '__main__.py' files), as well as README and LICENSE files."""
+		
+		# get a list of all the files inside the directory
+		subpaths = os.listdir(fullpath)
+
+		# find all Python files of form '.py' as well as any README and LICENSE files
+		for subpath in subpaths:
+			if not self.py_regex.match(subpath):
+				subpaths.remove(subpath)
+
 		pass
 
 
@@ -216,6 +282,9 @@ class Inspector:
 
 
 def main():
+	"""Used if this file is ran directly from the command line. Asks for
+	a filename/path and attempts to run the Inspector class on the file/path.
+	The results will be saved in a 'test_log.txt' file in your current directory."""
 	x = input("Enter a file name:")
 	i = Inspector(x)
 	

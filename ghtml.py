@@ -32,12 +32,11 @@ def forcedir(dir_path):
 
 	# if not, make all the required folders
 	# get all the folders required to be made
-	subdirs = get_subdirs()
+	subdirs = get_subdirs(dir_path)
 
 	# check each path along the line and make sure it exists
 	for path_combo in range(len(subdirs)):
 		path = '/'.join(subdirs[0 : path_combo + 1])
-		print(path)
 
 		if not os.path.isdir(path):
 			os.mkdir(path)
@@ -119,6 +118,9 @@ def fill_info(*, name = "", type = "", args = "", docstring = "", classes = None
 		string = "<li class='el_subfunction_link'><a href='html/{parents}{name}.html'>{name}</a></li>"
 		function_str = '\n'.join([string.format(name = func["name"], parents = func["parents"]) for func in functions])
 
+	# format docstring to appear with spaces/newlines as added to by the documentor
+	docstring = "<pre>" + docstring + "</pre>"
+
 	info = info.format( name = name, type = type, 
 						args = args, docstring = docstring, 
 						classes = class_str, functions = function_str)
@@ -129,6 +131,8 @@ def fill_info(*, name = "", type = "", args = "", docstring = "", classes = None
 def generate_index(modulename, docstring):
 	"""Creates the index page for the documentation"""
 	html = '<h3><i>{title}:</i></h3><hr/>\n<p class="bodytext">{doc}</p>\n'
+	# format docstring so it appears with spaces/newlines as added by documentor
+	docstring = "<pre>" + docstring + "</pre>"
 	return html.format(title = modulename, doc = docstring)
 
 
