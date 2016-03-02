@@ -46,6 +46,8 @@ Contains the Inspector class:
 	Inspector will not move/destroy/modify in any way your existing files of any type.
 """
 
+
+import ast
 import inspect  # uses isfunction, isclass, signature
 import importlib  # uses import_module
 import re
@@ -58,6 +60,8 @@ import json
 
 
 # TODO: include readme and license files, convert markdown to html
+# TODO: redo this to use the ast module instead of importing
+
 class Inspector:
 	"""Inspects a file or directory given the directory, then returns a dictionary
 	containing the package or module's information.
@@ -118,15 +122,21 @@ class Inspector:
 
 		# regex to find anything like '__init__' or '__repr__', etc.
 		self.regex = re.compile('__(\S+)__')
-		self.py_regex = re.compile('((\S+).py)|(readme)|(license)', flags = re.IGNORECASE)
+		self.py_regex = re.compile('((\S+).py)', flags = re.IGNORECASE)
+		self.info_regex = re.compile('(readme)|(license)', flags = re.IGNORECASE)
 
 		# directory (package) or module?
 		if os.path.isdir(mainpath):
 			# directory
 			# determine the title of the package from the name of this directory
-			self.title = ghtml.get_subdirs(mainpath)[-1]
+			realpath = os.path.abspath(mainpath)
+			self.title = os.path.split(realpath)[1]
 			
-			self.module_info = self.inspect_dir(mainpath)
+			dir_info = self.inspect_dir(realpath)
+
+			if dir_info is not None:
+				self.module_info = dir_info
+
 			pass
 
 		elif os.path.isfile(mainpath):
@@ -143,22 +153,57 @@ class Inspector:
 			self.module_info = None
 
 
-	def inspect_dir(self, fullpath):
+	def inspect_dir(self, fullpath, parents = ""):
 		"""Inspects a directory or Python package for directories, for Python code files ending in '.py'
 		(including '__init__.py' and '__main__.py' files), as well as README and LICENSE files."""
 		
+		docs = {
+			"name": "",
+			"docstring": "",
+			"parents": "",
+			"directories": [],
+			"modules": []
+		}
+
+
 		# get a list of all the files inside the directory
 		subpaths = os.listdir(fullpath)
+		print(subpaths)
+
+		docs["name"] = os.path.split(fullpath)[1]
+		docs["parents"] = parents
+		parent_str = parents + "/" + docs["name"]
 
 		# find all Python files of form '.py' as well as any README and LICENSE files
 		for subpath in subpaths:
-			if not self.py_regex.match(subpath):
+			realpath = fullpath + '/' + subpath
+
+			if os.path.isdir(realpath):
+				# subpath is a directory
+				subdocs = self.inspect_dir(realpath, parent_str)
+				if subdocs is not None:
+					docs["directories"].append(subdocs)
+
+			elif self.py_regex.match(subpath):
+				# subpath is a .py file
+				subdocs = self.inspect_file(realpath, parent_str)
+				if "__init__.py" == subpath:
+					docs["docstring"] = subdocs["docstring"]
+
+				docs["modules"].append(subdocs)
+
+			elif self.info_regex.match(subpath):
+				# subpath is a README or LICENSE file
+				# TODO
+				pass
+
+			else:
 				subpaths.remove(subpath)
 
-		pass
+		return docs if len(subpaths) > 0 else None
 
 
-	def inspect_file(self, fullpath):
+	def inspect_file(self, fullpath, parents = ""):
 		"""Inspects a Python file for docs, classes, and functions."""
 		# get the name of the file
 		directory, filename = os.path.split(fullpath)
@@ -174,6 +219,7 @@ class Inspector:
 		docs = {
 			"name": "",
 			"docstring": "",
+			"parents": "",
 			"classes": [],
 			"functions": []
 		}
@@ -181,6 +227,7 @@ class Inspector:
 		# get basic module information
 		docs["name"] = module.__name__
 		docs["docstring"] = module.__doc__.strip() if module.__doc__ != None else ""
+		docs["parents"] = parents + '/' + module.__name__
 
 		# create the parent name string to pass to children
 		parent_str = module.__name__ + "/"
@@ -292,7 +339,8 @@ def main():
 		with open('test_log.txt','w') as f:
 			f.write(json.dumps(i.module_info, indent = 2))
 			print("Wrote to test_log.txt")
-			
+	else:
+		print("No Python files found in directory")
 
 if __name__ == '__main__':
 	main()

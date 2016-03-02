@@ -1,51 +1,60 @@
 {
-  "name": "test",
-  "docstring": "This is some documentation.",
-  "functions": [
+  "name": "..",
+  "parents": "python",
+  "directories": [],
+  "modules": [
     {
-      "parents": "test/",
-      "name": "test_function",
-      "docstring": "A function",
-      "args": "x, y = 10"
-    }
-  ],
-  "classes": [
-    {
-      "name": "TestClass",
-      "docstring": "",
-      "functions": [
-        {
-          "parents": "test/TestClass/",
-          "name": "__init__",
-          "docstring": "Docstring in the wrong place. Can we find it?",
-          "args": "self, parent = 7, test = 'something', *, somethingelse = 'nada'"
-        },
-        {
-          "parents": "test/TestClass/",
-          "name": "subfunction_in_class",
-          "docstring": "This is just a test function.",
-          "args": "self, s1, s2, s3 = 'something'"
-        }
-      ],
       "classes": [
         {
-          "name": "TestSubclass",
-          "docstring": "",
-          "functions": [
+          "classes": [
             {
-              "parents": "test/TestClass/TestSubclass/",
-              "name": "__init__",
-              "docstring": "",
+              "classes": [],
+              "parents": "test/TestClass/",
+              "functions": [
+                {
+                  "name": "__init__",
+                  "parents": "test/TestClass/TestSubclass/",
+                  "args": "self",
+                  "docstring": "Initializer for a subclass"
+                }
+              ],
+              "name": "TestSubclass",
+              "docstring": "Simply a test class within a class",
               "args": "self"
             }
           ],
-          "classes": [],
-          "parents": "test/TestClass/",
-          "args": "self"
+          "parents": "test/",
+          "functions": [
+            {
+              "name": "__init__",
+              "parents": "test/TestClass/",
+              "args": "self, parent = 7, test = 'something', *, somethingelse = 'nada'",
+              "docstring": "Docstring in the wrong place. Can we find it?"
+            },
+            {
+              "name": "subfunction_in_class",
+              "parents": "test/TestClass/",
+              "args": "self, s1, s2, s3 = 'something'",
+              "docstring": "This is just a test function."
+            }
+          ],
+          "name": "TestClass",
+          "docstring": "This is a class for testing GracefulDocs!",
+          "args": "self, parent = 7, test = 'something', *, somethingelse = 'nada'"
         }
       ],
-      "parents": "test/",
-      "args": "self, parent = 7, test = 'something', *, somethingelse = 'nada'"
+      "name": "test",
+      "parents": "python/../test",
+      "functions": [
+        {
+          "name": "test_function",
+          "parents": "test/",
+          "args": "x, y = 10",
+          "docstring": "A function"
+        }
+      ],
+      "docstring": "This is some documentation."
     }
-  ]
+  ],
+  "docstring": ""
 }
