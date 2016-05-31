@@ -210,11 +210,8 @@ class Inspector:
 		name, _ = os.path.splitext(filename)
 
 		# Try to import the file to gather information
-		module = importlib.machinery.SourceFileLoader(name, fullpath).load_module()
-		#code.interact(local = locals())
-
-		if not module:
-			return
+		with open(filepath, 'r') as f:
+			nodes = ast.parse(f.read())
 
 		docs = {
 			"name": "",
@@ -223,26 +220,33 @@ class Inspector:
 			"classes": [],
 			"functions": []
 		}
+		
+		# module = importlib.machinery.SourceFileLoader(name, fullpath).load_module()
+		# #code.interact(local = locals())
 
-		# get basic module information
-		docs["name"] = module.__name__
-		docs["docstring"] = module.__doc__.strip() if module.__doc__ != None else ""
-		docs["parents"] = parents + '/' + module.__name__
+		# if not module:
+		# 	return
 
-		# create the parent name string to pass to children
-		parent_str = module.__name__ + "/"
 
-		members = dir(module)
-		for member in members:
-			# don't get __init__, __repr__, etc.
-			if self.regex.match(member):
-				continue
+		# # get basic module information
+		# docs["name"] = module.__name__
+		# docs["docstring"] = module.__doc__.strip() if module.__doc__ != None else ""
+		# docs["parents"] = parents + '/' + module.__name__
 
-			member_object = getattr(module, member)
-			if inspect.isclass(member_object):
-				docs["classes"].append(self.inspect_class(member_object, parent_str))
-			elif inspect.isfunction(member_object):
-				docs["functions"].append(self.inspect_function(member_object, parent_str))
+		# # create the parent name string to pass to children
+		# parent_str = module.__name__ + "/"
+
+		# members = dir(module)
+		# for member in members:
+		# 	# don't get __init__, __repr__, etc.
+		# 	if self.regex.match(member):
+		# 		continue
+
+		# 	member_object = getattr(module, member)
+		# 	if inspect.isclass(member_object):
+		# 		docs["classes"].append(self.inspect_class(member_object, parent_str))
+		# 	elif inspect.isfunction(member_object):
+		# 		docs["functions"].append(self.inspect_function(member_object, parent_str))
 
 		return docs
 
